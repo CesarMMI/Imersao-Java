@@ -99,9 +99,9 @@ public class Filme {
     @Override
     public String toString() {
         return (
-                ANSI_CODES.ANSI_YELLOW + getImDbRatingStars() + ANSI_CODES.ANSI_RESET +
-                ANSI_CODES.ANSI_GRAY + "\nTítulo: " + ANSI_CODES.ANSI_RESET + getFullTitle() +
-                ANSI_CODES.ANSI_GRAY + "\nPoster: " + ANSI_CODES.ANSI_RESET + getImage());
+                AnsiCodes.ANSI_YELLOW + getImDbRatingStars() + AnsiCodes.ANSI_RESET +
+                AnsiCodes.ANSI_GRAY + "\nTítulo: " + AnsiCodes.ANSI_RESET + getFullTitle() +
+                AnsiCodes.ANSI_GRAY + "\nPoster: " + AnsiCodes.ANSI_RESET + getImage());
     }
 }
 

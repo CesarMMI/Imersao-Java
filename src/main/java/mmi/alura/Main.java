@@ -1,59 +1,70 @@
 package mmi.alura;
 
-import mmi.alura.api.JsonParser;
-import mmi.alura.models.Filme;
+import mmi.alura.models.Apod;
+import mmi.alura.models.Content;
+import mmi.alura.models.FilmeResponse;
+import mmi.alura.utils.AnsiCodes;
+import mmi.alura.utils.Requester;
+import mmi.alura.utils.StickerBuilder;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        List<Filme> filmes = getFilmes();
-        for (Filme filme : filmes)
-            System.out.println(filme + "\n");
+        System.out.println("""
+                Escolha qual API quer chamar:
+                [0] IMDB
+                [1] Nasa""");
 
-        Filme filme;
-        System.out.println("Escolha um filme pelo rank:");
-        while (true){
-            Integer rank = scanner.nextInt();
-            filme = filmes.stream()
-                    .filter(f -> rank.equals(f.getRank()))
-                    .findAny()
-                    .orElse(null);
-            if (filme != null) break;
-            else System.out.println("Rank inválido");
+        int apiIndex;
+        while (true) {
+            apiIndex = scanner.nextInt();
+            if ((apiIndex == 0) || (apiIndex == 1)) break;
+            System.out.println("Indice inválido");
         }
 
-        String message = "";
+        Content[] data = new Content[0];
+        switch (apiIndex) {
+            case 0 -> data = Requester.getData(
+                    "https://raw.githubusercontent.com/alura-cursos" +
+                        "/imersao-java-2-api/main/TopMovies.json",
+                    FilmeResponse.class).items();
+            case 1 -> data = Requester.getData(
+                    "https://api.nasa.gov/planetary/apod" +
+                        "?api_key=IvVfW6eu7vOgoEZv8Yddp4xVnnl40c2yko0b5kxn" +
+                        "&count=5",
+                    Apod[].class);
+        }
+
+        for (int i = 0; i < data.length; i++)
+            System.out.printf("%n%sIndice: %s%s%n%s",
+                    AnsiCodes.ANSI_GRAY, AnsiCodes.ANSI_RESET, i, data[i]);
+
+        System.out.println("Escolha o item pelo índice:");
+        String imageUrl;
+        while (true){
+            int itemIndex = scanner.nextInt();
+            if (itemIndex > 0 && itemIndex < data.length){
+                imageUrl = data[itemIndex].getImageUrl();
+                break;
+            }
+            System.out.println("Indice inválido");
+        }
+
         System.out.println("Digite sua mensagem:");
-        message = scanner.next();
+        String message = scanner.next();
 
-        String fileName = "";
         System.out.println("Digite o nome do arquivo:");
-        fileName = scanner.next();
+        String fileName = scanner.next();
 
-        StickerBuilder.build()
-                .url(filme.getImage())
-                .message(message)
-                .fileName(fileName)
-                .create();
+        StickerBuilder.createSticker(imageUrl, message, fileName);
     }
 
-    private static List<Filme> getFilmes() throws IOException, InterruptedException {
-        String baseUrl = "https://raw.githubusercontent.com/alura-cursos/imersao-java-2-api/main/";
-        URI uri = URI.create(baseUrl + "TopMovies.json");
+    public static void printApods() {
 
-        HttpClient http = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
-        HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
-
-        return JsonParser.build().response(response.body()).parse();
     }
+
+
 }
 
